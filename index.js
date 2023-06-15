@@ -23,14 +23,38 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     const classesCollection = client.db("fluencyDb").collection("classes");
-    const instructorsCollection = client.db("fluencyDb").collection("instructors");
+    const instructorsCollection = client
+      .db("fluencyDb")
+      .collection("instructors");
+    const usersCollection = client.db("fluencyDb").collection("users");
+
+    // users api
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const query = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      console.log(result);
+      res.send(result);
+    });
 
     // classes api
     app.get("/classes", async (req, res) => {
       const result = await classesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/classes", async (req, res) => {
+      const item = req.body;
+      console.log(item);
+      const result = await classesCollection.insertOne(query);
       res.send(result);
     });
 
