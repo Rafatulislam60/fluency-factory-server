@@ -26,6 +26,9 @@ async function run() {
     await client.connect();
 
     const classesCollection = client.db("fluencyDb").collection("classes");
+    const selectedClassesCollection = client
+      .db("fluencyDb")
+      .collection("selectedClass");
     const instructorsCollection = client
       .db("fluencyDb")
       .collection("instructors");
@@ -61,6 +64,24 @@ async function run() {
     // instructors api
     app.get("/instructors", async (req, res) => {
       const result = await instructorsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // selected class
+    app.get("/selectedClass", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const query = { email: email };
+      const result = await selectedClassesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/selectedClass", async (req, res) => {
+      const classData = req.body;
+      console.log(classData);
+      const result = await selectedClassesCollection.insertOne(classData);
       res.send(result);
     });
 
