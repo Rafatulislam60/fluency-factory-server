@@ -114,7 +114,7 @@ async function run() {
       }
     });
 
-    // // verify instructor
+    // verify instructor
     // app.get("/users/instructor/:email", async (req, res) => {
     //   const email = req.params.email;
     //   const decodedEmail = req.decoded.email;
@@ -122,13 +122,13 @@ async function run() {
     //     res.send({ instructor: false });
     //   }
 
-      const query = { email: email };
-      const user = await usersCollection.findOne(query);
-      if (user) {
-        const result = { instructor: user?.role === "instructor" };
-        res.send(result);
-      }
-    });
+    //   const query = { email: email };
+    //   const user = await usersCollection.findOne(query);
+    //   if (user) {
+    //     const result = { instructor: user?.role === "instructor" };
+    //     res.send(result);
+    //   }
+    // });
 
     // classes api
     app.get("/classes", async (req, res) => {
