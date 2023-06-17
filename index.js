@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -23,7 +24,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const classesCollection = client.db("fluencyDb").collection("classes");
     const selectedClassesCollection = client
@@ -53,17 +54,48 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
-      const filter = { _id: new ObjectId(id) };
+      const role = req.query.role;
+      const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
-          role: "admin",
+          role: role,
         },
       };
-      const result = await usersCollection.updateOne(filter, updateDoc);
+      const result = await usersCollection.updateOne(query, updateDoc);
       res.send(result);
+    });
+
+    // verify admin
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        res.send({ admin: false });
+      }
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+
+      const result = { admin: user?.role === "admin" };
+      res.send(result);
+    });
+
+    // verify instructor
+    app.get("/users/instructor/:email", async (req, res) => {
+      const email = req.params.email;
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        res.send({ instructor: false });
+      }
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user) {
+        const result = { instructor: user?.role === "instructor" };
+        res.send(result);
+      }
     });
 
     // classes api
@@ -108,7 +140,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
